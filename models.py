@@ -1,0 +1,150 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.models import Model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.initializers import RandomNormal
+from tensorflow.keras.constraints import max_norm
+from tensorflow.keras.layers import Add
+from tensorflow.keras.layers import UpSampling2D
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import Layer
+from tensorflow.keras import backend
+
+from matplotlib import pyplot
+from math import sqrt
+from PIL import Image
+import os
+
+class PixelNormalization(Layer):
+    def __init__(self, **kwargs):
+        super(PixelNormalization, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        mean_square = tf.reduce_mean(tf.square(inputs), axis=-1, keepdims=True)
+        l2 = tf.math.rsqrt(mean_square + 1.0e-8)
+        normalized = inputs * l2
+        return normalized
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+    
+class MinibatchStdev(Layer):
+    def __init__(self, **kwargs):
+        super(MinibatchStdev, self).__init__(**kwargs)
+    
+    def call(self, inputs):
+        mean = tf.reduce_mean(inputs, axis=0, keepdims=True)
+        stddev = tf.sqrt(tf.reduce_mean(tf.square(inputs - mean), axis=0, keepdims=True) + 1e-8)
+        average_stddev = tf.reduce_mean(stddev, keepdims=True)
+        shape = tf.shape(inputs)
+        minibatch_stddev = tf.tile(average_stddev, (shape[0], shape[1], shape[2], 1))
+        combined = tf.concat([inputs, minibatch_stddev], axis=-1)
+        
+        return combined
+    
+    def compute_output_shape(self, input_shape):
+        input_shape = list(input_shape)
+        input_shape[-1] += 1
+        return tuple(input_shape)
+
+class WeightedSum(Add):
+    def __init__(self, alpha=0.0, **kwargs):
+        super(WeightedSum, self).__init__(**kwargs)
+        self.alpha = backend.variable(alpha, name='ws_alpha')
+    
+    def _merge_function(self, inputs):
+        assert (len(inputs) == 2)
+        output = ((1.0 - self.alpha) * inputs[0] + (self.alpha * inputs[1]))
+        return output
+
+class WeightScaling(Layer):
+    def __init__(self, shape, gain = np.sqrt(2), **kwargs):
+        super(WeightScaling, self).__init__(**kwargs)
+        shape = np.asarray(shape)
+        shape = tf.constant(shape, dtype=tf.float32)
+        fan_in = tf.math.reduce_prod(shape)
+        self.wscale = gain*tf.math.rsqrt(fan_in)
+      
+    def call(self, inputs, **kwargs):
+        inputs = tf.cast(inputs, tf.float32)
+        return inputs * self.wscale
+    
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+class Bias(Layer):
+    def __init__(self, **kwargs):
+        super(Bias, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        b_init = tf.zeros_initializer()
+        self.bias = tf.Variable(initial_value = b_init(shape=(input_shape[-1],), dtype='float32'), trainable=True)  
+
+    def call(self, inputs, **kwargs):
+        return inputs + self.bias
+    
+    def compute_output_shape(self, input_shape):
+        return input_shape  
+
+def WeightScalingDense(x, filters, gain, use_pixelnorm=False, activate=None):
+    init = RandomNormal(mean=0., stddev=1.)
+    in_filters = backend.int_shape(x)[-1]
+    x = layers.Dense(filters, use_bias=False, kernel_initializer=init, dtype='float32')(x)
+    x = WeightScaling(shape=(in_filters), gain=gain)(x)
+    x = Bias(input_shape=x.shape)(x)
+    if activate=='LeakyReLU':
+        x = layers.LeakyReLU(0.2)(x)
+    elif activate=='tanh':
+        x = layers.Activation('tanh')(x)
+    
+    if use_pixelnorm:
+        x = PixelNormalization()(x)
+    return x
+
+def WeightScalingConv(x, filters, kernel_size, gain, use_pixelnorm=False, activate=None, strides=(1,1)):
+    init = RandomNormal(mean=0., stddev=1.)
+    in_filters = backend.int_shape(x)[-1]
+    x = layers.Conv2D(filters, kernel_size, strides=strides, use_bias=False, padding="same", kernel_initializer=init, dtype='float32')(x)
+    x = WeightScaling(shape=(kernel_size[0], kernel_size[1], in_filters), gain=gain)(x)
+    x = Bias(input_shape=x.shape)(x)
+    if activate=='LeakyReLU':
+        x = layers.LeakyReLU(0.2)(x)
+    elif activate=='tanh':
+        x = layers.Activation('tanh')(x)
+    
+    if use_pixelnorm:
+        x = PixelNormalization()(x)
+    return x
+
+
+# def WeightScalingSeparableConv(x, filters, kernel_size, gain, use_pixelnorm=False, activate=None, strides=(1, 1)):
+#     init = RandomNormal(mean=0., stddev=1.)
+#     in_filters = backend.int_shape(x)[-1]
+#     x = layers.SeparableConv2D(filters, kernel_size, strides=strides, use_bias=False, padding="same",
+#                                kernel_initializer=init, dtype='float32')(x)
+#     x = WeightScaling(shape=(kernel_size[0], kernel_size[1], in_filters), gain=gain)(x)
+#     x = Bias(input_shape=x.shape)(x)
+#     if activate == 'LeakyReLU':
+#         x = layers.LeakyReLU(0.2)(x)
+#     elif activate == 'tanh':
+#         x = layers.Activation('tanh')(x)
+#
+#     if use_pixelnorm:
+#         x = PixelNormalization()(x)
+#     return x
+#
+#
+# def WeightScalingResConvBlock(x, filters, kernel_size, gain, use_pixelnorm=False, activate=None):
+#     x_in = x
+#     x = WeightScalingConv(x, filters, kernel_size, gain, activate, use_pixelnorm)
+#     x = WeightScalingConv(x, filters, kernel_size, gain, activate, use_pixelnorm)
+#
+#     x_skip = WeightScalingConv(x_in, filters, kernel_size=(1, 1), gain=gain, activate='LeakyReLU', use_pixelnorm=True)
+#
+#     x = layers.Add()([x, x_skip])
+#
+#     return x
+    
+    
