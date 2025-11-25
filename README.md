@@ -45,7 +45,7 @@ Preprocessing includes:
 - These extracted patches form the training dataset for PGGAN  
 
 <p align="center">
-  <img src="images/preprocessing.png" width="650">
+  <img src="extraction.png" width="650">
 </p>
 
 ---
@@ -66,7 +66,7 @@ Key features:
 A comparison between **real lung cancer patches** and **PGGAN-generated synthetic images**:
 
 <p align="center">
-  <img src="images/results.png" width="670">
+  <img src="Result.png" width="670">
 </p>
 
 ✔ **Real patches** – extracted from annotated WSIs  
