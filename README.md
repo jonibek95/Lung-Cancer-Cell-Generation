@@ -1,70 +1,62 @@
+
 🧬 Fake Lung Cancer Cell Generation using PGGAN
 
-Implemented the Generation of Fake Lung Cancer Cell Images using PGGAN
-
-📌 Project Overview
-
-This project focuses on generating realistic synthetic lung cancer cell images using Progressive Growing GAN (PGGAN).
-Whole Slide Images (WSIs) are extremely large gigapixel-sized pathology slides, and pathologists manually annotate cancer regions.
-We preprocess these WSIs, extract cancer patches, and train PGGAN to synthesize high-quality fake cancer cell images.
+Implementation of Synthetic Lung Cancer Cell Image Generation using Progressive Growing GAN (PGGAN)
 
 ⸻
 
-🗂️ Steps of the Project
+📌 Overview
+
+This repository presents a complete pipeline for generating realistic synthetic lung cancer cell images using Progressive Growing GAN (PGGAN).
+
+Because Whole Slide Images (WSIs) are extremely large and require expert annotation, this project focuses on:
+	•	Preparing WSIs
+	•	Extracting annotated cancer patches
+	•	Training PGGAN
+	•	Generating high-quality fake cancer cells for data augmentation and research
+
+This work helps mitigate the challenge of limited annotated medical datasets and provides a scalable solution for synthetic pathology image generation.
+
+⸻
+
+🚀 Pipeline Summary
 
 1️⃣ Data Preparation
-	•	Collected Whole Slide Images (WSIs).
-	•	Used annotated cancer regions provided by pathologists.
+	•	Load gigapixel Whole Slide Images (WSIs)
+	•	Utilize pathologist-provided annotations
+	•	Organize data for preprocessing and extraction
 
-2️⃣ Downscaled Resolution
-	•	WSIs are gigapixel-sized, so downscaling is required.
-	•	Applied preprocessing logic for optimal patch extraction.
+2️⃣ Downscale & Preprocessing
+	•	WSIs are too large (gigapixel), so downscaling is applied
+	•	Preprocessing logic includes:
+	•	Tissue detection
+	•	Color normalization (optional)
+	•	Artifact removal
 
 3️⃣ Patch Extraction
-	•	Extracted smaller patch images centered on annotated tumor regions.
-	•	These patches serve as training data for PGGAN.
+	•	Crop high-resolution cancer regions from WSIs
+	•	Each patch captures meaningful pathology patterns
+	•	These patches are used as the training dataset for PGGAN
+	
+	<img src="images/preprocessing.png" width="650">
 
 4️⃣ Fake Cell Generation (PGGAN)
-	•	Trained PGGAN using extracted patches.
-	•	The generator progressively learned to produce high-resolution lung cancer patterns.
+
+PGGAN is used due to its strong stability and ability to progressively grow image resolution during training.
+
+Features:
+	•	Start training from 4×4 → 8×8 → … → 256×256 resolution
+	•	Fade-in layers for stable GAN training
+	•	Generates realistic histopathology textures and nuclei structures
+
+⸻
 
 5️⃣ Results
-	•	Generated synthetic lung cancer images visually close to real microscopic patches.
 
-⸻
+Below is a comparison between real lung cancer patches and PGGAN-generated synthetic images:
 
-🖼️ Preprocessing Pipeline
+<img src="images/results.png" width="670">
+✔ Real patches – Extracted directly from annotated WSIs
+✔ Generated patches – Produced through trained PGGAN generator
 
-Gigapixel Whole Slide Image (WSI) → Extract annotated tumor regions → Generate small microscopy patch images.
-
-Typical extracted lung cancer patches:
-	•	High-resolution
-	•	Include nuclei, tissue structures, and cancer morphology
-	•	Used as training dataset for PGGAN
-
-⸻
-
-🧪 Results
-
-✔️ Original Patches
-
-Real lung cancer microscopy images extracted from WSIs.
-
-✔️ Generated Patches (PGGAN Output)
-
-Fake cancer cell images produced by PGGAN, visually similar to original tissue patterns.
-
-These synthetic images can be used for:
-	•	Data augmentation
-	•	Improving cancer classification models
-	•	Training GAN research pipelines
-	•	Reducing dependence on manually labeled medical datasets
-
-⸻
-
-🧠 Model Used
-
-PGGAN (Progressive Growing of GANs)
-	•	Starts training from low resolution
-	•	Gradually increases layers and image size
-	•	Produces stable high-resolution medical images
+Synthetic images show realistic tissue morphology, color distribution, and cellular structure.
