@@ -1,11 +1,11 @@
 
-🧬 Fake Lung Cancer Cell Generation using PGGAN
+# 🧬 Fake Lung Cancer Cell Generation using PGGAN
 
 Implementation of Synthetic Lung Cancer Cell Image Generation using Progressive Growing GAN (PGGAN)
 
 ⸻
 
-📌 Overview
+## 📌 Overview
 
 This repository presents a complete pipeline for generating realistic synthetic lung cancer cell images using Progressive Growing GAN (PGGAN).
 
@@ -19,28 +19,28 @@ This work helps mitigate the challenge of limited annotated medical datasets and
 
 ⸻
 
-🚀 Pipeline Summary
+## 🚀 Pipeline Summary
 
-1️⃣ Data Preparation
+1️⃣ **Data Preparation**
 	•	Load gigapixel Whole Slide Images (WSIs)
 	•	Utilize pathologist-provided annotations
 	•	Organize data for preprocessing and extraction
 
-2️⃣ Downscale & Preprocessing
+2️⃣ **Downscale & Preprocessing**
 	•	WSIs are too large (gigapixel), so downscaling is applied
 	•	Preprocessing logic includes:
 	•	Tissue detection
 	•	Color normalization (optional)
 	•	Artifact removal
 
-3️⃣ Patch Extraction
+3️⃣ **Patch Extraction**
 	•	Crop high-resolution cancer regions from WSIs
 	•	Each patch captures meaningful pathology patterns
 	•	These patches are used as the training dataset for PGGAN
 	
 	<img src="images/preprocessing.png" width="650">
 
-4️⃣ Fake Cell Generation (PGGAN)
+4️⃣ **Fake Cell Generation (PGGAN)**
 
 PGGAN is used due to its strong stability and ability to progressively grow image resolution during training.
 
@@ -51,7 +51,7 @@ Features:
 
 ⸻
 
-5️⃣ Results
+5️⃣ **Results**
 
 Below is a comparison between real lung cancer patches and PGGAN-generated synthetic images:
 
