@@ -10,10 +10,10 @@ Implementation of Synthetic Lung Cancer Cell Image Generation using Progressive 
 This repository presents a complete pipeline for generating realistic synthetic lung cancer cell images using Progressive Growing GAN (PGGAN).
 
 Because Whole Slide Images (WSIs) are extremely large and require expert annotation, this project focuses on:
-	•	Preparing WSIs
-	•	Extracting annotated cancer patches
-	•	Training PGGAN
-	•	Generating high-quality fake cancer cells for data augmentation and research
+	•	**Preparing WSIs**
+	•	**Extracting annotated cancer patches**
+	•	**Training PGGAN**
+	•	**Generating high-quality fake cancer cells for data augmentation and research**
 
 This work helps mitigate the challenge of limited annotated medical datasets and provides a scalable solution for synthetic pathology image generation.
 
@@ -22,16 +22,16 @@ This work helps mitigate the challenge of limited annotated medical datasets and
 ## 🚀 Pipeline Summary
 
 1️⃣ **Data Preparation**
-	•	Load gigapixel Whole Slide Images (WSIs)
-	•	Utilize pathologist-provided annotations
-	•	Organize data for preprocessing and extraction
+	•	**Load gigapixel Whole Slide Images (WSIs)**
+	•	**Utilize pathologist-provided annotations**
+	•	**Organize data for preprocessing and extraction**
 
 2️⃣ **Downscale & Preprocessing**
-	•	WSIs are too large (gigapixel), so downscaling is applied
-	•	Preprocessing logic includes:
-	•	Tissue detection
-	•	Color normalization (optional)
-	•	Artifact removal
+	•	**WSIs are too large (gigapixel), so downscaling is applied**
+	•	**Preprocessing logic includes:**
+	•	****Tissue detection****
+	•	****Color normalization (optional)****
+	•	****Artifact removal****
 
 3️⃣ **Patch Extraction**
 	•	Crop high-resolution cancer regions from WSIs
