@@ -1,4 +1,4 @@
-# 🧬 Fake Lung Cancer Cell Generation using PGGAN
+# 🧬 Fake Lung Cancer Cell Generation
 
 Implementation of synthetic lung cancer cell image generation using **Progressive Growing GAN (PGGAN)**.
 
